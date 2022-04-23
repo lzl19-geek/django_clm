@@ -1,24 +1,20 @@
-from django.shortcuts import render
-
 # Create your views here
 import re
 
-from django.shortcuts import render, redirect, HttpResponse, reverse
-from django.views.generic import View
-from django.contrib.auth import authenticate, login, logout
-from django.core.files.base import ContentFile
-from django.conf import settings
-from django.core import serializers
-from django.template import RequestContext
-from django.contrib import messages
-
 from apps.user.models import User, Address, UserImage, Shop, ShopImage, ShopTypeDetail
-# from utils.fdfs.storage import FastDFSStorage
-# from utils import common
-# from celery_execute_task.sendmail import send_activate_email
-
-from itsdangerous import TimedJSONWebSignatureSerializer as TJSS
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.core import serializers
+from django.shortcuts import render, redirect, HttpResponse, reverse
+from django.template import RequestContext
+from django.views.generic import View
 from itsdangerous import SignatureExpired
+from itsdangerous import TimedJSONWebSignatureSerializer as TJSS
+import utils.common as common
+from django.core.files.base import ContentFile
+# from utils.fdfs.storage import FastDFSStorage
+from celery_execute_task.sendmail import send_activate_email
 
 
 def find_type(request):
@@ -31,10 +27,8 @@ def find_type(request):
 
 class RegisterView(View):
     """注册"""
-
     def get(self, request):
         """显示注册页面"""
-
         # 买家注册页面
         return render(request, 'register.html')
 #
@@ -70,7 +64,7 @@ class RegisterView(View):
             # 邮箱不规范
             return render(request, 'register.html', {'errmsg': '邮箱不规范'})
 
-        # 校验用户名是否重复
+        # # 校验用户名是否重复
         # if common.verify_exist(request, 'username', username):
         #     return render(request, 'register.html', {'errmsg': '用户名已存在'})
         #
@@ -93,8 +87,9 @@ class RegisterView(View):
         user.real_name = receiver
 
         # 读取上传的文件中的file项为二进制文件
-        # file_content = ContentFile(img.read())
-        # user.image.save(img.name, file_content)
+
+        file_content = ContentFile(img.read())
+        user.image.save(img.name, file_content)
         user.is_active = 0  # 设置为未激活状态
         user.save()
 
@@ -106,7 +101,7 @@ class RegisterView(View):
         # 默认解码为utf8
         token = token.decode()
         # 使用celery发邮件
-        # send_activate_email.delay(email, username, token)
+        send_activate_email.delay(email, username, token)
 
         # address表添加数据
         address = Address()
@@ -115,16 +110,16 @@ class RegisterView(View):
         address.addr = addr
         address.is_default = True
         address.user = user
-        # lat_lng = common.get_lng_lat(addr)
-        # address.lat = lat_lng['lat']
-        # address.lng = lat_lng['lng']
-        # address.save()
+        lat_lng = common.get_lng_lat(addr)
+        address.lat = lat_lng['lat']
+        address.lng = lat_lng['lng']
+        address.save()
 
         # user_image 表添加数据
-        user_image = UserImage()
-        user_image.user = user
+        # user_image = UserImage()
+        # user_image.user = user
         # user_image.image = rec
-        user_image.save()
+        # user_image.save()
 
         # 返回响应
         if int(mjsj):
@@ -133,8 +128,8 @@ class RegisterView(View):
             # return redirect(reverse('user:sj_register'))
         else:
             # 买家登录页面
-            return render(request, 'login.html', locals())
-            # return redirect(reverse('user:login'))
+            # return render(request, 'login.html', locals())
+            return redirect(reverse('user:login'))
 
 
 class UserActivate(View):
@@ -201,8 +196,8 @@ class ShopRegisterView(View):
                        shop_price=shop_price, receive_start=receive_start, receive_end=receive_end, high_opinion='0')
         df_shop.save()
 
-        shop_image = ShopImage(image=rec, shop_id=df_shop.id)
-        shop_image.save()
+        # shop_image = ShopImage(image=rec, shop_id=df_shop.id)
+        # shop_image.save()
 
         return redirect(reverse('user:login'))
 
