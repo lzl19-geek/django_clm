@@ -48,9 +48,9 @@ class RegisterView(View):
         img = request.FILES.get('file')
 
         # 校验数据
-        if not all([username, password, cpassword, receiver, phone, addr, email, sex, mjsj, img]):
-            # 缺少相关数据
-            return render(request, 'register.html', {'errmsg': '缺少相关数据'})
+        # if not all([username, password, cpassword, receiver, phone, addr, email, sex, mjsj, img]):
+        #     # 缺少相关数据
+        #     return render(request, 'register.html', {'errmsg': '缺少相关数据'})
 
         # rec = FastDFSStorage().save(img.name, img)
 
@@ -59,20 +59,20 @@ class RegisterView(View):
             # 两次输入密码不一致
             return render(request, 'register.html', {'errmsg': '两次输入密码不一致'})
 
-        # 校验邮箱
+        # # 校验邮箱
         if not re.match(r'^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
-            # 邮箱不规范
+        #     # 邮箱不规范
             return render(request, 'register.html', {'errmsg': '邮箱不规范'})
 
-        # # 校验用户名是否重复
+        # # # 校验用户名是否重复
         # if common.verify_exist(request, 'username', username):
         #     return render(request, 'register.html', {'errmsg': '用户名已存在'})
-        #
-        # # 校验手机号码是否重复
+        # #
+        # # # 校验手机号码是否重复
         # if common.verify_exist(request, 'phone', phone):
         #     return render(request, 'register.html', {'errmsg': '手机号码已存在'})
-        #
-        # # 校验邮箱是否重复
+        # #
+        # # # 校验邮箱是否重复
         # if common.verify_exist(request, 'email', email):
         #     return render(request, 'register.html', {'errmsg': '邮箱已存在'})
 
@@ -96,12 +96,18 @@ class RegisterView(View):
         # 处理发送邮件
         # 加密用户的身份信息，生成激活token
         serializer = TJSS(settings.SECRET_KEY, 900)
+        print(serializer)
+        print(1111)
         info = {'confirm': user.id}
         token = serializer.dumps(info)
+        print(token)
+        print(2)
         # 默认解码为utf8
         token = token.decode()
+        print(token)
+        print(3)
         # 使用celery发邮件
-        send_activate_email.delay(email, username, token)
+        send_activate_email(email, username, token)
 
         # address表添加数据
         address = Address()
@@ -114,6 +120,8 @@ class RegisterView(View):
         address.lat = lat_lng['lat']
         address.lng = lat_lng['lng']
         address.save()
+        print(address)
+        print(4)
 
         # user_image 表添加数据
         # user_image = UserImage()
@@ -128,8 +136,8 @@ class RegisterView(View):
             # return redirect(reverse('user:sj_register'))
         else:
             # 买家登录页面
-            # return render(request, 'login.html', locals())
-            return redirect(reverse('user:login'))
+            return render(request, 'login.html', locals())
+            # return redirect(reverse('user:login'))
 
 
 class UserActivate(View):
@@ -151,7 +159,8 @@ class UserActivate(View):
             user.save()
 
             # 跳转到登录页面
-            return redirect(reverse('user:login'))
+            return render(request, 'login.html', locals())
+            # return redirect(reverse('user:login'))
 
         except SignatureExpired as se:
             # 激活链接已过期，应重发激活邮件
@@ -253,21 +262,22 @@ class LoginView(View):
 
                 # 判断商家买家，跳转不同首页，1为商家
                 if user.is_staff:
-                    response = redirect(reverse('goods:sj_index'))
-                    # response = render(request, 'sj_index.html')
+                    # response = redirect(reverse('goods:sj_index'))
+                    return render(request, 'sj_index.html')
                 else:
-                    response = redirect(reverse('goods:index'))  # HttpResponseRedirect
-                    # response = render(request, 'index.html')
-                return response
+                    # response = redirect(reverse('goods:index'))  # HttpResponseRedirect
+                    return render(request, 'index.html')
+
             else:
                 # 用户未激活
-                # return render(request, 'login.html', {'errmsg': '账户未激活'})
-                messages.error(request, "账户未激活")
-                return render(request, 'login.html', locals(), RequestContext(request))
+                return render(request, 'login.html', {'errmsg': '账户未激活'})
+                # messages.error(request, "账户未激活")
+                # return render(request, 'login.html', locals(), RequestContext(request))
         else:
             # 用户名或密码错误
-            messages.error(request, "用户名或密码错误")
-            return render(request, 'login.html', locals(), RequestContext(request))
+            # messages.error(request, "用户名或密码错误")
+            # return render(request, 'login.html', locals(), RequestContext(request))
+            return render(request, 'login.html', {'errmsg': '用户名或密码错误'})
 
 
 class LogoutView(View):

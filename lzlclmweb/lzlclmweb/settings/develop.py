@@ -41,6 +41,6 @@ EMAIL_PORT = 25
 # EMAIL_HOST_USER = 'clmwm@163.com'
 EMAIL_HOST_USER = '2818111237@qq.com'
 # 在邮箱中设置的客户端授权密码，换成自己的
-EMAIL_HOST_PASSWORD = 'qqotczsvbbzddcei'
+EMAIL_HOST_PASSWORD = 'xjcqfxlddiisdcei'
 # 收件人看到的发件人，<>中地址必须与上方保持一致
-EMAIL_FROM = 'c0c<2818111237@qq.com>'
+EMAIL_FROM = '<2818111237@qq.com>'
