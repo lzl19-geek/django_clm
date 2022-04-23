@@ -59,10 +59,10 @@ class RegisterView(View):
             # 两次输入密码不一致
             return render(request, 'register.html', {'errmsg': '两次输入密码不一致'})
 
-        # 校验邮箱
-        if not re.match(r'^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
-            # 邮箱不规范
-            return render(request, 'register.html', {'errmsg': '邮箱不规范'})
+        # # 校验邮箱
+        # if not re.match(r'^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+        #     # 邮箱不规范
+        #     return render(request, 'register.html', {'errmsg': '邮箱不规范'})
 
         # # 校验用户名是否重复
         # if common.verify_exist(request, 'username', username):
@@ -101,7 +101,7 @@ class RegisterView(View):
         # 默认解码为utf8
         token = token.decode()
         # 使用celery发邮件
-        send_activate_email.delay(email, username, token)
+        send_activate_email(email, username, token)
 
         # address表添加数据
         address = Address()
@@ -128,8 +128,8 @@ class RegisterView(View):
             # return redirect(reverse('user:sj_register'))
         else:
             # 买家登录页面
-            # return render(request, 'login.html', locals())
-            return redirect(reverse('user:login'))
+            return render(request, 'login.html', locals())
+            # return redirect(reverse('user:login'))
 
 
 class UserActivate(View):
@@ -151,7 +151,8 @@ class UserActivate(View):
             user.save()
 
             # 跳转到登录页面
-            return redirect(reverse('user:login'))
+            return render(request, 'login.html', locals())
+            # return redirect(reverse('user:login'))
 
         except SignatureExpired as se:
             # 激活链接已过期，应重发激活邮件

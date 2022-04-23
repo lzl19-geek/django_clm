@@ -1,3 +1,4 @@
+import sys
 import time
 
 from django.core.mail import send_mail
@@ -8,6 +9,7 @@ from celery import Celery
 # 初始化django环境
 import django
 import os
+sys.setrecursionlimit(5000)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lzlclmweb.settings.develop')
 django.setup()
 
